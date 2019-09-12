@@ -2,7 +2,7 @@
 set -eu
 
 : "${SOURCECRED_REMOTE:=git@github.com:sourcecred/sourcecred.git}"
-: "${SOURCECRED_REF:=origin/master}"
+: "${SOURCECRED_REF:=origin/combined-deploy}"
 
 : "${DEPLOY_REMOTE:=git@github.com:sourcecred/sourcecred.github.io.git}"
 : "${DEPLOY_BRANCH:=master}"
