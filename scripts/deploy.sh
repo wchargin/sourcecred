@@ -76,10 +76,11 @@ build_and_deploy() {
     "${sourcecred_repo}/scripts/build_static_site.sh" \
         --target "${static_site}" \
         ${DEPLOY_CNAME_URL:+--cname "${DEPLOY_CNAME_URL}"} \
-        --project @sourcecred \
-        --project @filecoin-project \
-        --project @ipld \
-        --project @libp2p \
+        --project-file "${sourcecred_repo}/scripts/deploy_config/discourse.json" \
+        --project-file "${sourcecred_repo}/scripts/deploy_config/combined.json" \
+        --project sourcecred/sourcecred \
+        --project sourcecred/research \
+        --project sourcecred/widgets \
         ;
 
     sourcecred_site="$(mktemp -d --suffix ".sourcecred-site")"
