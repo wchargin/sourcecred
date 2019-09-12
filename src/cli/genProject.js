@@ -134,7 +134,7 @@ export const genProject: Command = async (args, std) => {
     githubToken,
   });
   const projectJSON = projectToJSON(project);
-  console.log(stringify(projectJSON));
+  console.log(stringify(projectJSON, {space: 4}));
   return 0;
 };
 
