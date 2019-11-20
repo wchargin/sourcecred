@@ -7,6 +7,7 @@ import {
   type DiscourseQueries,
 } from "./discourse";
 import {type Initiative} from "./initiative";
+import type {ReadRepository} from "../discourse/mirrorRepository";
 import type {Topic, Post, CategoryId, TopicId} from "../discourse/fetch";
 import {NodeAddress} from "../../core/graph";
 import dedent from "../../util/dedent";
@@ -154,6 +155,17 @@ describe("plugins/initiatives/discourse", () => {
     } finally {
       spyWarn().mockRestore();
     }
+  });
+
+  describe("DiscourseQueries", () => {
+    it("can be casted from ReadRepository", () => {
+      // Don't need to actually call it. Flow will detect issues.
+      function _unused_castReadRepository(
+        repo: ReadRepository
+      ): DiscourseQueries {
+        return (repo: DiscourseQueries);
+      }
+    });
   });
 
   describe("DiscourseInitiativeRepository", () => {
