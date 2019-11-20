@@ -80,6 +80,12 @@ describe("plugins/discourse/createGraph", () => {
         "Method topicsInCategories should be unused for createGraph"
       );
     }
+    topicById() {
+      throw new Error("Method topicById should be unused by createGraph");
+    }
+    postsInTopic() {
+      throw new Error("Method postsInTopic should be unused by createGraph");
+    }
   }
 
   function example() {

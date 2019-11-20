@@ -285,4 +285,92 @@ describe("plugins/discourse/mirrorRepository", () => {
       if (error) throw error;
     }).toThrow("FOREIGN KEY constraint failed");
   });
+
+  it("topicById gets the matching topics", () => {
+    // Given
+    const db = new Database(":memory:");
+    const url = "http://example.com";
+    const repository = new SqliteMirrorRepository(db, url);
+    const topic1: Topic = {
+      id: 123,
+      categoryId: 42,
+      title: "Sample topic 1",
+      timestampMs: 456789,
+      bumpedMs: 456999,
+      authorUsername: "credbot",
+    };
+    const topic2: Topic = {
+      id: 456,
+      categoryId: 42,
+      title: "Sample topic 2",
+      timestampMs: 456789,
+      bumpedMs: 456999,
+      authorUsername: "credbot",
+    };
+
+    // When
+    repository.addTopic(topic1);
+    repository.addTopic(topic2);
+    const actualT1 = repository.topicById(topic1.id);
+    const actualT2 = repository.topicById(topic2.id);
+
+    // Then
+    expect(actualT1).toEqual(topic1);
+    expect(actualT2).toEqual(topic2);
+  });
+
+  it("postsInTopic gets the number of posts requested", () => {
+    // Given
+    const db = new Database(":memory:");
+    const url = "http://example.com";
+    const repository = new SqliteMirrorRepository(db, url);
+    const topic: Topic = {
+      id: 123,
+      categoryId: 1,
+      title: "Sample topic",
+      timestampMs: 456789,
+      bumpedMs: 456999,
+      authorUsername: "credbot",
+    };
+    const p1: Post = {
+      id: 100,
+      topicId: 123,
+      indexWithinTopic: 0,
+      replyToPostIndex: null,
+      timestampMs: 456789,
+      authorUsername: "credbot",
+      cooked: "<p>Valid post</p>",
+    };
+    const p2: Post = {
+      // Deliberately scramble id, order of `indexWithinTopic` should matter.
+      id: 121,
+      topicId: 123,
+      indexWithinTopic: 1,
+      replyToPostIndex: null,
+      timestampMs: 456888,
+      authorUsername: "credbot",
+      cooked: "<p>Follow up 1</p>",
+    };
+    const p3: Post = {
+      id: 102,
+      topicId: 123,
+      indexWithinTopic: 2,
+      replyToPostIndex: null,
+      timestampMs: 456999,
+      authorUsername: "credbot",
+      cooked: "<p>Follow up 2</p>",
+    };
+
+    // When
+    repository.addTopic(topic);
+    // Deliberately scramble the adding order, order of `indexWithinTopic` should matter.
+    repository.addPost(p3);
+    repository.addPost(p1);
+    repository.addPost(p2);
+    const posts = repository.postsInTopic(topic.id, 2);
+
+    // Then
+    // Note: these are in order, starting from the opening post.
+    expect(posts).toEqual([p1, p2]);
+  });
 });
