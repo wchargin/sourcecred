@@ -5,6 +5,7 @@ import {type RepoId} from "../core/repoId";
 import {toCompat, fromCompat, type Compatible} from "../util/compat";
 import {type Identity} from "../plugins/identity/identity";
 import {type DiscourseServer} from "../plugins/discourse/loadDiscourse";
+import {type InitiativeOptions} from "../plugins/initiatives/loadInitiatives";
 
 export type ProjectId = string;
 
@@ -29,28 +30,55 @@ export type Project = {|
   +repoIds: $ReadOnlyArray<RepoId>,
   +discourseServer: DiscourseServer | null,
   +identities: $ReadOnlyArray<Identity>,
+  +initiatives: InitiativeOptions | null,
 |};
 
-const COMPAT_INFO = {type: "sourcecred/project", version: "0.4.0"};
+const COMPAT_INFO = {type: "sourcecred/project", version: "0.5.0"};
 
-const upgradeFrom030 = (p) => ({
+const upgradeFrom030 = (p) =>
+  upgradeFrom040({
+    ...p,
+    discourseServer:
+      p.discourseServer != null
+        ? {serverUrl: p.discourseServer.serverUrl}
+        : null,
+  });
+
+const upgradeFrom040 = (p) => ({
   ...p,
-  discourseServer:
-    p.discourseServer != null ? {serverUrl: p.discourseServer.serverUrl} : null,
+  initiatives: null,
 });
 
 const upgrades = {
   "0.3.0": upgradeFrom030,
   "0.3.1": upgradeFrom030,
+  "0.4.0": upgradeFrom040,
 };
 
-export type ProjectJSON = Compatible<Project>;
+/**
+ * Creates a new Project instance with default values.
+ *
+ * Note: the `id` field is required, as there's no sensible default.
+ */
+export function createProject(p: $Shape<Project>): Project {
+  if (!p.id) {
+    throw new Error("Project.id must be set");
+  }
 
-export function projectToJSON(p: Project): ProjectJSON {
+  return {
+    repoIds: [],
+    identities: [],
+    discourseServer: null,
+    initiatives: null,
+    ...p,
+  };
+}
+
+export function projectToJSON(p: Project): Compatible<Project> {
   return toCompat(COMPAT_INFO, p);
 }
 
-export function projectFromJSON(j: ProjectJSON): Project {
+export function projectFromJSON(j: Compatible<any>): Project {
   return fromCompat(COMPAT_INFO, j, upgrades);
 }
 
