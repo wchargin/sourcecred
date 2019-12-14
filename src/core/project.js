@@ -5,6 +5,7 @@ import {type RepoId} from "../core/repoId";
 import {toCompat, fromCompat, type Compatible} from "../util/compat";
 import {type Identity} from "../plugins/identity/identity";
 import {type DiscourseServer} from "../plugins/discourse/loadDiscourse";
+import {type InitiativeOptions} from "../plugins/initiatives/loadInitiatives";
 
 export type ProjectId = string;
 
@@ -29,19 +30,29 @@ export type Project = {|
   +repoIds: $ReadOnlyArray<RepoId>,
   +discourseServer: DiscourseServer | null,
   +identities: $ReadOnlyArray<Identity>,
+  +initiatives: InitiativeOptions | null,
 |};
 
-const COMPAT_INFO = {type: "sourcecred/project", version: "0.4.0"};
+const COMPAT_INFO = {type: "sourcecred/project", version: "0.5.0"};
 
-const upgradeFrom030 = (p) => ({
+const upgradeFrom030 = (p) =>
+  upgradeFrom040({
+    ...p,
+    discourseServer:
+      p.discourseServer != null
+        ? {serverUrl: p.discourseServer.serverUrl}
+        : null,
+  });
+
+const upgradeFrom040 = (p) => ({
   ...p,
-  discourseServer:
-    p.discourseServer != null ? {serverUrl: p.discourseServer.serverUrl} : null,
+  initiatives: null,
 });
 
 const upgrades = {
   "0.3.0": upgradeFrom030,
   "0.3.1": upgradeFrom030,
+  "0.4.0": upgradeFrom040,
 };
 
 /**
@@ -58,6 +69,7 @@ export function createProject(p: $Shape<Project>): Project {
     repoIds: [],
     identities: [],
     discourseServer: null,
+    initiatives: null,
     ...p,
   };
 }
