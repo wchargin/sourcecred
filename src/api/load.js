@@ -21,6 +21,11 @@ import * as NullUtil from "../util/null";
 import {nodeContractions} from "../plugins/identity/nodeContractions";
 import {type DiscourseQueries} from "../plugins/initiatives/discourse";
 import {loadInitiatives} from "../plugins/initiatives/loadInitiatives";
+import {
+  CascadingReferenceDetector,
+  GithubReferenceDetector,
+  DiscourseReferenceDetector,
+} from "../plugins/initiatives/references";
 
 export type LoadOptions = {|
   +project: Project,
@@ -96,12 +101,18 @@ export async function load(
         discourseServer,
         cacheDirectory,
       });
+      // TODO: this approach to loading is pretty hacky for it's first implementation.
+      const refs = new CascadingReferenceDetector([
+        new DiscourseReferenceDetector(repo),
+        new GithubReferenceDetector(),
+      ]);
       return loadInitiatives(
         {
           queries: (repo: DiscourseQueries),
           serverUrl,
           ...project.initiatives,
         },
+        refs,
         taskReporter
       );
     }

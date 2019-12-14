@@ -40,6 +40,7 @@ export const noopReferenceDetector: ReferenceDetector = {
 const TASK_NAME = "initiatives";
 export async function loadInitiatives(
   options: InitiativeLoadOptions,
+  refs: ReferenceDetector,
   reporter: TaskReporter
 ): Promise<Graph> {
   reporter.start(TASK_NAME);
@@ -52,7 +53,7 @@ export async function loadInitiatives(
     topicBlacklist,
   });
 
-  const graph = createGraph(repo, noopReferenceDetector);
+  const graph = createGraph(repo, refs);
 
   reporter.finish(TASK_NAME);
   return graph;
