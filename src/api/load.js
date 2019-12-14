@@ -12,10 +12,15 @@ import {type TimelineCredParameters} from "../analysis/timeline/params";
 
 import {type Project} from "../core/project";
 import {setupProjectDirectory} from "../core/project_io";
-import {loadDiscourse} from "../plugins/discourse/loadDiscourse";
+import {
+  createMirrorRepository,
+  loadDiscourse,
+} from "../plugins/discourse/loadDiscourse";
 import {type PluginDeclaration} from "../analysis/pluginDeclaration";
 import * as NullUtil from "../util/null";
 import {nodeContractions} from "../plugins/identity/nodeContractions";
+import {type DiscourseQueries} from "../plugins/initiatives/discourse";
+import {loadInitiatives} from "../plugins/initiatives/loadInitiatives";
 
 export type LoadOptions = {|
   +project: Project,
@@ -76,6 +81,32 @@ export async function load(
     }
   }
 
+  function initiativesGraph(): ?Promise<Graph> {
+    const {discourseServer, initiatives} = project;
+    if (initiatives != null) {
+      if (discourseServer == null) {
+        throw new Error(
+          "Tried to load initiatives, but no discourseServer set."
+        );
+      }
+      const {serverUrl} = discourseServer;
+      // Note: creates it's own discourse DB handle for the moment.
+      // May be improved when the loading system is changed.
+      const repo = createMirrorRepository({
+        discourseServer,
+        cacheDirectory,
+      });
+      return loadInitiatives(
+        {
+          queries: (repo: DiscourseQueries),
+          serverUrl,
+          ...project.initiatives,
+        },
+        taskReporter
+      );
+    }
+  }
+
   // For each plugin that wants to provide a Graph, get a Promise for the
   // graph. That way we can request them in parallel, via Promise.all, rather
   // than blocking on the plugins sequentially.
@@ -88,6 +119,14 @@ export async function load(
 
   const pluginGraphs = await Promise.all(pluginGraphPromises);
   let graph = Graph.merge(pluginGraphs);
+
+  // Initiatives needs to be before identities, to avoid contraction before edges are added.
+  // But after Discourse to make sure it's data is available.
+  const initiativesGraphPromise = initiativesGraph();
+  if (initiativesGraphPromise != null) {
+    graph = Graph.merge([graph, await initiativesGraphPromise]);
+  }
+
   const {identities, discourseServer} = project;
   if (identities.length) {
     const serverUrl =

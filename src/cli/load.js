@@ -15,6 +15,7 @@ import {type PluginDeclaration} from "../analysis/pluginDeclaration";
 import {declaration as discourseDeclaration} from "../plugins/discourse/declaration";
 import {declaration as githubDeclaration} from "../plugins/github/declaration";
 import {declaration as identityDeclaration} from "../plugins/identity/declaration";
+import {declaration as initiativesDeclaration} from "../plugins/initiatives/declaration";
 
 function usage(print: (string) => void): void {
   print(
@@ -135,6 +136,9 @@ const loadCommand: Command = async (args, std) => {
     }
     if (project.identities.length) {
       plugins.push(identityDeclaration);
+    }
+    if (project.initiatives != null) {
+      plugins.push(initiativesDeclaration);
     }
     return {
       project,

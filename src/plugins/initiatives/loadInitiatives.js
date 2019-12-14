@@ -1,6 +1,13 @@
 // @flow
 
+import {Graph} from "../../core/graph";
+import {TaskReporter} from "../../util/taskReporter";
 import type {CategoryId, TopicId} from "../discourse/fetch";
+import {createGraph, type ReferenceDetector} from "./createGraph";
+import {
+  type DiscourseQueries,
+  DiscourseInitiativeRepository,
+} from "./discourse";
 
 export type InitiativeOptions = {|
   /**
@@ -17,3 +24,36 @@ export type InitiativeOptions = {|
    */
   +topicBlacklist: $ReadOnlyArray<TopicId>,
 |};
+
+export type InitiativeLoadOptions = {|
+  ...InitiativeOptions,
+  +serverUrl: string,
+  +queries: DiscourseQueries,
+|};
+
+// Placeholder reference detector that does nothing.
+// When the load system is changed, this can be removed.
+export const noopReferenceDetector: ReferenceDetector = {
+  addressFromUrl: (_) => null,
+};
+
+const TASK_NAME = "initiatives";
+export async function loadInitiatives(
+  options: InitiativeLoadOptions,
+  reporter: TaskReporter
+): Promise<Graph> {
+  reporter.start(TASK_NAME);
+
+  const {serverUrl, queries, discourseCategoryId, topicBlacklist} = options;
+  const repo = new DiscourseInitiativeRepository({
+    serverUrl,
+    queries,
+    initiativesCategory: discourseCategoryId,
+    topicBlacklist,
+  });
+
+  const graph = createGraph(repo, noopReferenceDetector);
+
+  reporter.finish(TASK_NAME);
+  return graph;
+}
