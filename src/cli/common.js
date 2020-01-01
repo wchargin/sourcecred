@@ -6,6 +6,7 @@ import path from "path";
 import deepFreeze from "deep-freeze";
 import fs from "fs-extra";
 import {type Weights, fromJSON as weightsFromJSON} from "../analysis/weights";
+import {validateToken, type GithubToken} from "../plugins/github/token";
 
 import * as NullUtil from "../util/null";
 
@@ -22,8 +23,12 @@ export function sourcecredDirectory(): string {
   return env != null ? env : defaultSourcecredDirectory();
 }
 
-export function githubToken(): string | null {
-  return NullUtil.orElse(process.env.SOURCECRED_GITHUB_TOKEN, null);
+export function githubToken(): GithubToken | null {
+  const envToken = NullUtil.orElse(process.env.SOURCECRED_GITHUB_TOKEN, null);
+  if (envToken == null || !envToken.length) {
+    return null;
+  }
+  return validateToken(envToken);
 }
 
 export async function loadWeights(path: string): Promise<Weights> {

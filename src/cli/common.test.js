@@ -5,6 +5,7 @@ import tmp from "tmp";
 import fs from "fs-extra";
 import {defaultWeights, toJSON as weightsToJSON} from "../analysis/weights";
 import {NodeAddress} from "../core/graph";
+import {exampleGithubToken} from "../plugins/github/token";
 
 import {
   defaultPlugins,
@@ -51,8 +52,8 @@ describe("cli/common", () => {
 
   describe("githubToken", () => {
     it("uses the environment variable when available", () => {
-      process.env.SOURCECRED_GITHUB_TOKEN = "010101";
-      expect(githubToken()).toEqual("010101");
+      process.env.SOURCECRED_GITHUB_TOKEN = exampleGithubToken;
+      expect(githubToken()).toEqual(exampleGithubToken);
     });
     it("returns `null` if the environment variable is not set", () => {
       delete process.env.SOURCECRED_GITHUB_TOKEN;

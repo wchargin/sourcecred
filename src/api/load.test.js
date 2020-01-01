@@ -5,6 +5,7 @@ import tmp from "tmp";
 import path from "path";
 import fs from "fs-extra";
 
+import {exampleGithubToken} from "../plugins/github/token";
 import type {Options as LoadGraphOptions} from "../plugins/github/loadGraph";
 import type {Options as LoadDiscourseOptions} from "../plugins/discourse/loadDiscourse";
 import {nodeContractions} from "../plugins/identity/nodeContractions";
@@ -66,7 +67,6 @@ describe("api/load", () => {
     identities: [],
   };
   deepFreeze(project);
-  const githubToken = "EXAMPLE_TOKEN";
   const weights = defaultWeights();
   // Tweaks the weights so that we can ensure we aren't overriding with default weights
   weights.nodeManualWeights.set(NodeAddress.empty, 33);
@@ -78,7 +78,7 @@ describe("api/load", () => {
     const taskReporter = new TestTaskReporter();
     const options: LoadOptions = {
       sourcecredDirectory,
-      githubToken,
+      githubToken: exampleGithubToken,
       params,
       plugins,
       project,
@@ -99,7 +99,7 @@ describe("api/load", () => {
     const cacheDirectory = path.join(sourcecredDirectory, "cache");
     const expectedLoadGraphOptions: LoadGraphOptions = {
       repoIds: project.repoIds,
-      token: githubToken,
+      token: exampleGithubToken,
       cacheDirectory,
     };
     expect(loadGraph).toHaveBeenCalledWith(

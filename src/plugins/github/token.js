@@ -1,5 +1,7 @@
 // @flow
 
+export opaque type GithubToken: string = string;
+
 /**
  * Validates a token against know formatting.
  * Throws an error if it appears invalid.
@@ -10,10 +12,10 @@
  * Installation access token
  * https://developer.github.com/v3/apps/#create-a-new-installation-token
  */
-export function validateToken(token: string) {
+export function validateToken(token: string): GithubToken {
   const personalAccessTokenRE = /^[A-Fa-f0-9]{40}$/;
   if (personalAccessTokenRE.test(token)) {
-    return;
+    return token;
   }
 
   // We're currently being lenient with installation tokens, since we're not completely
@@ -37,7 +39,7 @@ export function validateToken(token: string) {
       );
     }
 
-    return;
+    return token;
   }
 
   throw new Error(
@@ -45,3 +47,12 @@ export function validateToken(token: string) {
       `Please verify the token "${token}" is correct, or report a bug if you think it should work.`
   );
 }
+
+/**
+ * An example Token for testing purposes.
+ */
+export const exampleGithubToken: GithubToken = validateToken(
+  Array(40)
+    .fill("0")
+    .join("")
+);
