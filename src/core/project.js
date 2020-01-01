@@ -56,7 +56,7 @@ type Project_v030 = {|
 
 const COMPAT_INFO = {type: "sourcecred/project", version: "0.4.0"};
 
-const upgradeFrom030 = (p) => ({
+const upgradeFrom030 = (p: Project_v030 | Project_v031): Project_v040 => ({
   ...p,
   discourseServer:
     p.discourseServer != null ? {serverUrl: p.discourseServer.serverUrl} : null,
@@ -67,13 +67,11 @@ const upgrades = {
   "0.3.1": upgradeFrom030,
 };
 
-export type ProjectJSON = Compatible<Project>;
-
-export function projectToJSON(p: Project): ProjectJSON {
+export function projectToJSON(p: Project): Compatible<Project> {
   return toCompat(COMPAT_INFO, p);
 }
 
-export function projectFromJSON(j: ProjectJSON): Project {
+export function projectFromJSON(j: Compatible<any>): Project {
   return fromCompat(COMPAT_INFO, j, upgrades);
 }
 
