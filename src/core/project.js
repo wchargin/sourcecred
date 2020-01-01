@@ -24,10 +24,33 @@ export type ProjectId = string;
  * the future (e.g. showing the last update time for each of the project's data
  * dependencies).
  */
-export type Project = {|
+export type Project = Project_v040;
+export type SupportedProject = Project_v030 | Project_v031 | Project_v040;
+
+type Project_v040 = {|
   +id: ProjectId,
   +repoIds: $ReadOnlyArray<RepoId>,
   +discourseServer: DiscourseServer | null,
+  +identities: $ReadOnlyArray<Identity>,
+|};
+
+type Project_v031 = {|
+  +id: ProjectId,
+  +repoIds: $ReadOnlyArray<RepoId>,
+  +discourseServer: {|
+    +serverUrl: string,
+    +apiUsername?: string,
+  |} | null,
+  +identities: $ReadOnlyArray<Identity>,
+|};
+
+type Project_v030 = {|
+  +id: ProjectId,
+  +repoIds: $ReadOnlyArray<RepoId>,
+  +discourseServer: {|
+    +serverUrl: string,
+    +apiUsername: string,
+  |} | null,
   +identities: $ReadOnlyArray<Identity>,
 |};
 
